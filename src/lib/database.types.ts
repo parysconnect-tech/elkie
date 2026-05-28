@@ -213,6 +213,43 @@ export type Database = {
         }
         Relationships: []
       }
+
+      site_content: {
+        Row: {
+          client_id: string
+          business_name: string | null
+          tagline: string | null
+          about: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          address: string | null
+          hours: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          business_name?: string | null
+          tagline?: string | null
+          about?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          address?: string | null
+          hours?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          business_name?: string | null
+          tagline?: string | null
+          about?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          address?: string | null
+          hours?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<never, never>
     Functions: Record<never, never>
