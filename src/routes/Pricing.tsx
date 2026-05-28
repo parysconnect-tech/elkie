@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { Check, ChevronDown, Sparkles } from 'lucide-react'
-import { PLANS, type BillingCycle } from '@/lib/plans'
+import { Check, ChevronDown, Loader2, Sparkles } from 'lucide-react'
+import { PLANS, type BillingCycle, type PlanSlug } from '@/lib/plans'
+import { useAuth } from '@/lib/auth'
+import { startCheckout, redirectTo } from '@/lib/stripe'
 import { cn } from '@/lib/cn'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 
@@ -37,7 +39,27 @@ const FAQ: { q: string; a: string }[] = [
 export default function Pricing() {
   const [cycle, setCycle] = useState<BillingCycle>('monthly')
   const [openFaq, setOpenFaq] = useState<number | null>(0)
+  const [busyPlan, setBusyPlan] = useState<PlanSlug | null>(null)
   const reduced = usePrefersReducedMotion()
+  const navigate = useNavigate()
+  const { session } = useAuth()
+
+  async function handleSelect(plan: PlanSlug) {
+    // Free demo always goes to the intake form
+    if (plan === 'demo') {
+      navigate('/start?plan=demo')
+      return
+    }
+    setBusyPlan(plan)
+    const result = await startCheckout(plan, cycle, session?.access_token)
+    if (result.ok) {
+      redirectTo(result.url)
+      return
+    }
+    // Stripe not configured (stub mode) or not signed in → capture the lead first
+    setBusyPlan(null)
+    navigate(`/start?plan=${plan}`)
+  }
 
   return (
     <>
@@ -149,21 +171,27 @@ export default function Pricing() {
                     ))}
                   </ul>
 
-                  <Link
-                    to={
-                      plan.freeDemo
-                        ? '/start?plan=demo'
-                        : `/start?plan=${plan.slug}`
-                    }
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(plan.slug)}
+                    disabled={busyPlan === plan.slug}
                     className={cn(
-                      'cta-btn block rounded-full px-5 py-3 text-center text-sm font-medium',
+                      'cta-btn flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-center text-sm font-medium disabled:cursor-not-allowed disabled:opacity-70',
                       plan.popular
                         ? 'cta-gradient glow-border text-white shadow-xl'
                         : 'border-card-border text-text hover:border-accent hover:text-accent border',
                     )}
                   >
-                    {plan.freeDemo ? 'Request demo' : 'Select plan'}
-                  </Link>
+                    {busyPlan === plan.slug ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" /> Starting…
+                      </>
+                    ) : plan.freeDemo ? (
+                      'Request demo'
+                    ) : (
+                      'Select plan'
+                    )}
+                  </button>
                 </motion.div>
               )
             })}

@@ -8,13 +8,17 @@ import {
   FileText,
   Sparkles,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { findPlan, PLANS } from '@/lib/plans'
 import { hasSupabase } from '@/lib/supabase'
+import { openBillingPortal, redirectTo } from '@/lib/stripe'
 
 export default function DashboardBilling() {
-  const { profile } = useAuth()
+  const { profile, session } = useAuth()
+  const [portalBusy, setPortalBusy] = useState(false)
+  const [portalNote, setPortalNote] = useState<string | null>(null)
   const plan = findPlan(profile?.plan ?? undefined) ?? PLANS[0]!
   const isActive = !!profile?.stripe_subscription_id || !hasSupabase()
 
@@ -24,10 +28,19 @@ export default function DashboardBilling() {
     { year: 'numeric', month: 'long', day: 'numeric' },
   )
 
-  function openPortal() {
-    // TODO(step-10): redirect to Stripe Customer Portal session
-    alert(
-      'Stripe billing portal opens here once Checkout is wired up (step 10). It lets you update card, download invoices, or cancel.',
+  async function openPortal() {
+    setPortalNote(null)
+    setPortalBusy(true)
+    const result = await openBillingPortal(session?.access_token)
+    setPortalBusy(false)
+    if (result.ok) {
+      redirectTo(result.url)
+      return
+    }
+    setPortalNote(
+      result.fallback
+        ? 'Billing portal activates once Stripe is configured (test keys in .env + Edge Functions deployed).'
+        : result.error,
     )
   }
 
@@ -99,9 +112,10 @@ export default function DashboardBilling() {
             <button
               type="button"
               onClick={openPortal}
-              className="cta-gradient cta-btn inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white shadow"
+              disabled={portalBusy}
+              className="cta-gradient cta-btn inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white shadow disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <CreditCard size={14} /> Manage payment & invoices
+              <CreditCard size={14} /> {portalBusy ? 'Opening…' : 'Manage payment & invoices'}
             </button>
             <Link
               to="/pricing"
@@ -110,6 +124,9 @@ export default function DashboardBilling() {
               <ArrowUpRight size={14} /> Change plan
             </Link>
           </div>
+          {portalNote && (
+            <p className="text-text-muted mt-3 text-xs">{portalNote}</p>
+          )}
         </div>
       </motion.section>
 

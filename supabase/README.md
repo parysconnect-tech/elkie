@@ -112,6 +112,46 @@ Now the form shows the real (invisible) Turnstile widget and the Edge Function v
 
 ---
 
+## 7. (Optional) Wire up Stripe Checkout (TEST mode)
+
+Until you do this, the pricing "Select" buttons just route to the intake form. Once configured, they start a real Stripe Checkout.
+
+1. Sign up at <https://stripe.com>. Stay in **Test mode** (toggle, top-right of the dashboard).
+2. **Create products + prices** (Products → Add product). For each plan create a recurring price (monthly + yearly). Copy each `price_...` ID.
+3. Add the **publishable key** to `.env.local`:
+   ```env
+   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+   ```
+4. Set the **secret key + price IDs** as Edge Function secrets:
+   ```bash
+   supabase secrets set STRIPE_SECRET_KEY=sk_test_... \
+     STRIPE_PRICE_STARTER_MONTHLY=price_... \
+     STRIPE_PRICE_STARTER_ANNUAL=price_... \
+     STRIPE_PRICE_CUSTOM_MONTHLY=price_... \
+     STRIPE_PRICE_CUSTOM_ANNUAL=price_... \
+     STRIPE_PRICE_PRO_MONTHLY=price_... \
+     STRIPE_PRICE_PRO_ANNUAL=price_... \
+     --project-ref YOUR-PROJECT-REF
+   ```
+5. Deploy the three Stripe functions:
+   ```bash
+   supabase functions deploy create-checkout-session --project-ref YOUR-PROJECT-REF
+   supabase functions deploy create-portal-session   --project-ref YOUR-PROJECT-REF
+   supabase functions deploy stripe-webhook --no-verify-jwt --project-ref YOUR-PROJECT-REF
+   ```
+6. In Stripe → Developers → Webhooks, add endpoint
+   `https://YOUR-PROJECT-REF.supabase.co/functions/v1/stripe-webhook`,
+   subscribe to `checkout.session.completed`, `customer.subscription.updated`,
+   `customer.subscription.deleted`, then copy its signing secret:
+   ```bash
+   supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_... --project-ref YOUR-PROJECT-REF
+   ```
+7. Test with Stripe's test card `4242 4242 4242 4242`, any future expiry, any CVC.
+
+**When you go live:** swap every `pk_test_`/`sk_test_` for `pk_live_`/`sk_live_`, create live products/prices, and re-set the secrets. That's the only change.
+
+---
+
 ## Troubleshooting
 
 **"Row-Level Security policy violation" when inserting messages**
