@@ -1,0 +1,436 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Brand tokens — preserved from elkie.co.za v1
+   Dark mode is default; .light class on <html> switches to light mode.
+   ========================================================================== */
+@layer base {
+  :root {
+    --bg: #0b0f1a;
+    --bg-sec: #111827;
+    --text: #f0f0f0;
+    --text-muted: rgba(240, 240, 240, 0.55);
+    --accent: #00e5cc;
+    --accent2: #6366f1;
+    --accent-glow: rgba(0, 229, 204, 0.25);
+    --accent-dim: rgba(0, 229, 204, 0.1);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --input-bg: rgba(255, 255, 255, 0.06);
+    --nav-bg: rgba(11, 15, 26, 0.85);
+    --particle: 0, 229, 204;
+    color-scheme: dark;
+  }
+
+  :root.light {
+    --bg: #f7f5f0;
+    --bg-sec: #ffffff;
+    --text: #1a1463;
+    --text-muted: rgba(26, 20, 99, 0.6);
+    --accent: #ff5c47;
+    --accent2: #7c3aed;
+    --accent-glow: rgba(255, 92, 71, 0.2);
+    --accent-dim: rgba(255, 92, 71, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(26, 20, 99, 0.1);
+    --input-bg: rgba(26, 20, 99, 0.04);
+    --nav-bg: rgba(247, 245, 240, 0.9);
+    --particle: 255, 92, 71;
+    color-scheme: light;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-body antialiased;
+    background-color: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.6;
+    transition:
+      background-color 0.5s,
+      color 0.4s;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--card-border);
+    border-radius: 3px;
+  }
+}
+
+/* ==========================================================================
+   Reusable utility classes — gradient text, glass, animated border, etc.
+   ========================================================================== */
+@layer utilities {
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent));
+    background-size: 300% 300%;
+    animation: gradientShift 5s ease infinite;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .anim-border {
+    position: relative;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .anim-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: conic-gradient(
+      from 0deg,
+      var(--accent),
+      var(--accent2),
+      #ec4899,
+      var(--accent2),
+      var(--accent)
+    );
+    border-radius: inherit;
+    animation: spinBorder 4s linear infinite;
+    z-index: -2;
+  }
+  .anim-border::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: var(--bg-sec);
+    border-radius: calc(1.25rem - 2px);
+    z-index: -1;
+  }
+
+  .typing-cursor::after {
+    content: '|';
+    animation: blink 0.8s step-end infinite;
+    color: var(--accent);
+    font-weight: 300;
+    margin-left: 2px;
+    -webkit-text-fill-color: var(--accent);
+  }
+
+  .marquee-track {
+    animation: marquee 30s linear infinite;
+  }
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  .cta-gradient {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    background-size: 200% 200%;
+    animation: gradientShift 4s ease infinite;
+  }
+
+  .cta-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .cta-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  .cta-btn:hover::before {
+    transform: translateX(100%);
+  }
+
+  .shimmer-card {
+    position: relative;
+  }
+  .shimmer-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.06) 50%,
+      transparent 100%
+    );
+    animation: shimmer 3s ease-in-out infinite;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    overflow: hidden;
+  }
+
+  .glow-border {
+    box-shadow:
+      0 0 30px var(--accent-glow),
+      0 0 80px rgba(0, 229, 204, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .card-hover {
+    transition:
+      transform 0.3s,
+      box-shadow 0.3s;
+  }
+  .card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  }
+
+  .star {
+    color: #f0a500;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+  }
+}
+
+/* Light-mode overrides for the same utilities */
+.light .glass {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(26, 20, 99, 0.1);
+  box-shadow: 0 4px 24px rgba(26, 20, 99, 0.06);
+}
+.light .card-hover {
+  box-shadow: 0 2px 16px rgba(26, 20, 99, 0.05);
+}
+.light .card-hover:hover {
+  box-shadow: 0 20px 40px rgba(26, 20, 99, 0.1);
+}
+.light .glow-border {
+  box-shadow:
+    0 0 25px rgba(255, 92, 71, 0.12),
+    0 4px 20px rgba(26, 20, 99, 0.08);
+}
+.light .anim-border::after {
+  background: #ffffff;
+}
+.light .cta-gradient {
+  background: linear-gradient(135deg, #ff5c47, #7c3aed);
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+}
+.light .shimmer-card::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 92, 71, 0.06) 50%,
+    transparent 100%
+  );
+}
+.light .star {
+  color: #e8920d;
+}
+.light .gradient-text {
+  background: linear-gradient(135deg, #ff5c47, #7c3aed, #ff5c47);
+  background-size: 300% 300%;
+  animation: gradientShift 5s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ==========================================================================
+   Keyframes — all preserved from elkie.co.za v1.
+   ========================================================================== */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes spinBorder {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes float1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(50px, -40px) scale(1.1);
+  }
+  66% {
+    transform: translate(-35px, 25px) scale(0.9);
+  }
+}
+
+@keyframes float2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-45px, 35px) scale(0.95);
+  }
+  66% {
+    transform: translate(30px, -25px) scale(1.08);
+  }
+}
+
+@keyframes float3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(20px, 30px) scale(1.05);
+  }
+}
+
+@keyframes float4 {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-15px, 20px) rotate(180deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pulseGreen {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+}
+
+/* ==========================================================================
+   Reduced motion — strip all animation if user prefers it.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
